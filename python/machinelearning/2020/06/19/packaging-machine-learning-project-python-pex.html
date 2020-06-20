@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Packaging a Machine Learning Project using Python PEX | Manish Saraswat</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Packaging a Machine Learning Project using Python PEX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Use pex python library to package a python project for deployment" />
+<meta property="og:description" content="Use pex python library to package a python project for deployment" />
+<link rel="canonical" href="https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html" />
+<meta property="og:url" content="https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html" />
+<meta property="og:site_name" content="Manish Saraswat" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-06-19T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Use pex python library to package a python project for deployment","@type":"BlogPosting","headline":"Packaging a Machine Learning Project using Python PEX","dateModified":"2020-06-19T00:00:00-05:00","datePublished":"2020-06-19T00:00:00-05:00","url":"https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://saraswatmks.github.io/blog/feed.xml" title="Manish Saraswat" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Packaging a Machine Learning Project using Python PEX | Manish Saraswat</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Packaging a Machine Learning Project using Python PEX" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Use pex python library to package a python project for deployment" />
+<meta property="og:description" content="Use pex python library to package a python project for deployment" />
+<link rel="canonical" href="https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html" />
+<meta property="og:url" content="https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html" />
+<meta property="og:site_name" content="Manish Saraswat" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-06-19T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Use pex python library to package a python project for deployment","@type":"BlogPosting","headline":"Packaging a Machine Learning Project using Python PEX","dateModified":"2020-06-19T00:00:00-05:00","datePublished":"2020-06-19T00:00:00-05:00","url":"https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://saraswatmks.github.io/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://saraswatmks.github.io/blog/feed.xml" title="Manish Saraswat" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head><body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Manish Saraswat</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Packaging a Machine Learning Project using Python PEX</h1><p class="page-description">Use pex python library to package a python project for deployment</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-06-19T00:00:00-05:00" itemprop="datePublished">
+        Jun 19, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      7 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#python">python</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/blog/categories/#machinelearning">machinelearning</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#introduction">Introduction</a></li>
+<li class="toc-entry toc-h2"><a href="#table-of-contents">Table of Contents</a></li>
+<li class="toc-entry toc-h2"><a href="#1-basic-concepts">1. Basic Concepts</a></li>
+<li class="toc-entry toc-h2"><a href="#2-writing-code">2. Writing Code</a></li>
+<li class="toc-entry toc-h2"><a href="#3-build-test-and-package-the-code">3. Build, Test and Package the code</a></li>
+<li class="toc-entry toc-h2"><a href="#4-deploy">4. Deploy</a></li>
+<li class="toc-entry toc-h2"><a href="#summary">Summary</a></li>
+</ul><h2 id="introduction">
+<a class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>Companies these days are looking for data scientists who can not only build machine learning models but also deploy them. Why? Because, companies are progressing towards data driven product/features development.
+Deploying models is not that easy. Specially, if you are a fresher or a data scientist who has been mainly doing dashboarding / data analysis.</p>
+
+<p>In this tutorial, I will share my knowledge on the first step of deploying a machine learning model i.e. <strong>packing your model code</strong>. Here we’ll create a dummy machine learning project and learn to package it.</p>
+
+<p><strong>PEX (Python executable)</strong> provides an easy way to put together all the code &amp; dependencies and run it as an executable. You no longer have to worry about installing dependencies separately.</p>
+
+<p><em>Note:</em> This tutorial assumes no prior knowledge of how to package a python project.</p>
+
+<h2 id="table-of-contents">
+<a class="anchor" href="#table-of-contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>Table of Contents</h2>
+
+<ol>
+  <li>Basic Concepts</li>
+  <li>Writing Code</li>
+  <li>Build, Test and Package the Code</li>
+  <li>Deploy</li>
+</ol>
+
+<h2 id="1-basic-concepts">
+<a class="anchor" href="#1-basic-concepts" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. Basic Concepts</h2>
+
+<p>Before we start structuring the project, let’s get familiar with some basic concepts in programming:</p>
+
+<p><strong>Object Oriented Programming (OOP):</strong> In code packaging, using OOP style (classes &amp; objects) is a widely used methodolgy. Because, it helps in maintaining the code and helps in reducing possible bugs that would get overlooked otherwise.</p>
+
+<p><strong>Module:</strong> A module is directory (a folder) living in your project which can be imported. A simple way to identify a module is to look for <code class="highlighter-rouge">__init__.py</code> file. If this file exists in any directory, that directory will be a module.</p>
+
+<p><strong>Script::</strong> A script is simply a <code class="highlighter-rouge">.py</code> code file which can be executed. A simple way to identify a script is to look for the entrypoint i.e. <code class="highlighter-rouge">__name__ == '__main__'</code> line.</p>
+
+<p>Let’s start working now.</p>
+
+<p>First things first, go to any directory, inside it, create a new directory named <code class="highlighter-rouge">datapackage</code>. Fill it files shown below:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>└── datapack
+    ├── config
+    ├── datapack
+    │   ├── __init__.py
+    │   ├── docs
+    │   └── utils
+    ├── requirements.txt
+    └── setup.py
+</code></pre></div></div>
+<p>Inside <code class="highlighter-rouge">datapack</code>, we will have the following structure:</p>
+
+<ol>
+  <li>
+<strong>config:</strong> is a directory which will contain the configuration files.</li>
+  <li>
+<strong>datapack:</strong> is a module which will contain the code. It’s a good practice to name it same as the project.
+    <ul>
+      <li>
+<strong>docs:</strong> contains files/data to be used by the modules.</li>
+      <li>
+<strong>utils</strong> also contains code but mainly helper functions</li>
+    </ul>
+  </li>
+  <li>
+<strong>requirements.txt</strong> contains a list of dependencies to be used.</li>
+  <li>
+<strong>setup.py</strong> this file will bundle our project into a package</li>
+</ol>
+
+<p>This is the minimal structure one would need to create a python project. You can always add more directories to organise your project in a way that it is easier to maintain.</p>
+
+<h2 id="2-writing-code">
+<a class="anchor" href="#2-writing-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Writing Code</h2>
+
+<p>Now, let’s add the code to our <code class="highlighter-rouge">datapack</code> project. Basically, it would do the following:</p>
+
+<ul>
+  <li>Read data from .csv file</li>
+  <li>Do preprocessing (text column mainly)</li>
+  <li>Train a model</li>
+  <li>Finally, return the predictions.</li>
+</ul>
+
+<p>Now, keep copy-pasting the code and create these scripts at your end. The code is simple and self-explanatory.</p>
+
+<p><code class="highlighter-rouge">datapack/datapack/utils/preprocess.py</code> : This script contains code to clean text data. We know this beforehand, because we know that our data contains a column called as <em>text</em>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">re</span>
+
+<span class="k">class</span> <span class="nc">PreProcess</span><span class="p">:</span>
+    <span class="o">@</span><span class="nb">staticmethod</span>
+    <span class="k">def</span> <span class="nf">clean_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stopwords</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">]</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">r'\W+'</span><span class="p">,</span><span class="s">' '</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">]</span><span class="o">.</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">]</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">' '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stopwords</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">data</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">datapack/datapack/main.py</code> : This will be the entrypoint of the our project.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">datapack.utils.preprocess</span> <span class="kn">import</span> <span class="n">PreProcess</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">fir</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">CountVectorizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
+
+<span class="k">class</span> <span class="nc">TrainPack</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stopwords</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'docs'</span><span class="p">,</span> <span class="s">'data'</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stopwords</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'docs'</span><span class="p">,</span> <span class="s">'stopwords'</span><span class="p">),</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">clean_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">PreProcess</span><span class="p">()</span><span class="o">.</span><span class="n">clean_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">stopwords</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stopwords</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">make_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">text_matrix</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">(</span><span class="n">min_df</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s">'text'</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">text_matrix</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">text_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_features</span><span class="p">()</span>
+        <span class="n">gnb</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">()</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">gnb</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">text_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s">'label'</span><span class="p">])</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">text_matrix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pred</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clean_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_model</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'finished successfully'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
+    <span class="n">TrainPack</span><span class="p">(</span><span class="n">config_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="n">fire</span><span class="o">.</span><span class="n">Fire</span><span class="p">(</span><span class="n">compute</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">datapack/setup.py</code> : This file is super important for the successful packaging of the project. It defines the entire setup of the project i.e. which directory are the modules, where the data lives and creates <code class="highlighter-rouge">.whl</code>, <code class="highlighter-rouge">.tar.gz</code> extensions for package distribution.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">codecs</span> <span class="kn">import</span> <span class="nb">open</span> <span class="k">as</span> <span class="n">codecs_open</span>
+
+<span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+
+<span class="c1"># Get the long description from the relevant file
+</span><span class="k">with</span> <span class="n">codecs_open</span><span class="p">(</span><span class="s">'README.md'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">long_description</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+
+<span class="n">setup</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s">'datapack'</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s">'0.0.1'</span><span class="p">,</span>
+    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(),</span>
+    <span class="n">package_data</span><span class="o">=</span><span class="p">{</span><span class="s">'datapack'</span><span class="p">:</span> <span class="p">[</span><span class="s">'docs'</span><span class="p">]},</span>
+    <span class="n">url</span><span class="o">=</span><span class="s">''</span><span class="p">,</span>
+    <span class="n">license</span><span class="o">=</span><span class="s">''</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s">'Machine learning model'</span><span class="p">,</span>
+    <span class="n">long_description</span><span class="o">=</span><span class="n">long_description</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">datapack/datapack/utils/__init__.py</code>  : This file should be empty.</p>
+
+<p><code class="highlighter-rouge">datapack/datapack/__init__.py</code>  : Again, this file should be empty.</p>
+
+<p><code class="highlighter-rouge">datapack/datapack/docs</code> : contains the sample data. You can download the files from here<em>datapack/datapack/docs</em> : contains the sample data. You can download the files from here: <a href="https://drive.google.com/open?id=1pKFtTzFgvDHXJqF1hi0red53NyPfIugE" target="_blank">sample.csv</a> and <a href="https://drive.google.com/open?id=1pBGwNC1oiheN_In9q9s0iP9u_Q3I0H8D" target="_blank">stopwords.txt</a></p>
+
+<p>If you have followed all the steps as above, your project should look like this:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>datapack
+├── Makefile
+├── README.md
+├── config
+│   └── config.ini
+├── datapack
+│   ├── __init__.py
+│   ├── docs
+│   │   ├── sample.csv
+│   │   └── stopwords.txt
+│   ├── main.py
+│   └── utils
+│       ├── __init__.py
+│       └── preprocess.py
+├── requirements.txt
+└── setup.py
+</code></pre></div></div>
+
+<p>Last but not the least, we’ll create a <code class="highlighter-rouge">Makefile</code> which contains commandline code, which we might need to run many times.</p>
+
+<p><strong><code class="highlighter-rouge">datapack/Makefile</code></strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PYTHON=$(shell which python)
+
+#################################################################################
+# Clean	                                                                        #
+#################################################################################
+
+clean:
+	rm -rf .pytest_cache
+	rm -rf datapack.egg-info
+	rm -rf target
+
+#################################################################################
+# Build pex                                                                     #
+#################################################################################
+
+build: clean
+	mkdir -p target
+	pex . -v --disable-cache -r requirements.txt -R datapack/docs -o target/datapack.pex --python=$(PYTHON)
+
+#################################################################################
+# Run pex                                                                     #
+#################################################################################
+
+run:
+	$(PYTHON) target/datapack.pex -m datapack.main --config_file config/config.ini
+</code></pre></div></div>
+
+<p>Basically, it does the following:</p>
+
+<ul>
+  <li>
+<strong>clean:</strong> Remove all the unnessary residue files which will be created during building the pex.</li>
+  <li>
+<strong>build:</strong> Build the .pex files</li>
+  <li>
+<strong>run:</strong> Runs the pex as a standalone python executable</li>
+</ul>
+
+<h2 id="3-build-test-and-package-the-code">
+<a class="anchor" href="#3-build-test-and-package-the-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. Build, Test and Package the code</h2>
+
+<p>That’s all the code we would need for this project, we are almost in our final stage. To package the project, go the package directory from the terminal and simply run:</p>
+
+<p><code class="highlighter-rouge">make build</code></p>
+
+<p>This would generate some messages on the terminal and finally your project would looks like:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>datapack
+├── Makefile
+├── README.md
+├── config
+│   └── config.ini
+├── datapack
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-36.pyc
+│   │   └── __init__.cpython-37.pyc
+│   ├── docs
+│   │   ├── sample.csv
+│   │   └── stopwords.txt
+│   ├── main.py
+│   └── utils
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   └── preprocess.cpython-37.pyc
+│       └── preprocess.py
+├── datapack.egg-info
+│   ├── PKG-INFO
+│   ├── SOURCES.txt
+│   ├── dependency_links.txt
+│   └── top_level.txt
+├── requirements.txt
+├── setup.py
+└── target
+    └── datapack.pex
+</code></pre></div></div>
+
+<p>Congrats, you’ve learned to package your code along with dependencies. <code class="highlighter-rouge">target/datapack.pex</code> is the packaged code.</p>
+
+<p>Now, let’s test if it works. We do:</p>
+
+<p><code class="highlighter-rouge">make run</code></p>
+
+<p>It it works, on your terminal you should see :  <code class="highlighter-rouge">finished successfully</code></p>
+
+<h2 id="4-deploy">
+<a class="anchor" href="#4-deploy" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. Deploy</h2>
+
+<p>In deployment, the most complicated part is to manage the project dependencies. Many a times, your deployment would fail because of mismatch between dependencies in your development environment vs production environment. Trust me, it gets frustrating. You need to make sure that the machine/instance/pod on which you are deploying the model has the same dependencies version. But, no more with pex.</p>
+
+<p>In our case, we have the dependencies along with the code. We just need to make sure about two things:</p>
+<ol>
+  <li>
+<strong>Python Version:</strong> You need to have the same python version installed to avoid conflicts.</li>
+  <li>
+<strong>Platform Dependency:</strong> .pex files are platform dependent. That means, you cannot run a .pex file in linux/windows which is build on mac.</li>
+</ol>
+
+<p>If you’ve made sure the above two things, just simple copy the .pex file, config file your local to the deployment instance and run the actual <code class="highlighter-rouge">make run</code> command, which is:</p>
+
+<p><code class="highlighter-rouge">python3 target/datapack.pex -m datapack.main --config_file config.ini</code></p>
+
+<h2 id="summary">
+<a class="anchor" href="#summary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary</h2>
+
+<p>In this tutorial, we learned about packaging your python project using .pex library for deployment. We saw how to modularise the code using classes and objects. As mentioned above, pex files are nothing but standalone python interpreters. You could actually run <code class="highlighter-rouge">.pex</code> files as interpreter on your terminal. In the next tutorial, we’ll see how use python 3’s zipapp module to package the code.</p>
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="saraswatmks/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/python/machinelearning/2020/06/19/packaging-machine-learning-project-python-pex.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Using data science to solve real world problems</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/saraswatmks" title="saraswatmks"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/manish_saraswt" title="manish_saraswt"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

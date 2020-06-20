@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Useful Full Text Search (FTS) queries with sqlite in Python 3.7 | Manish Saraswat</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Useful Full Text Search (FTS) queries with sqlite in Python 3.7" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Use fts5 with sqlite python for full text search applications" />
+<meta property="og:description" content="Use fts5 with sqlite python for full text search applications" />
+<link rel="canonical" href="https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html" />
+<meta property="og:url" content="https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html" />
+<meta property="og:site_name" content="Manish Saraswat" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-04-30T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Use fts5 with sqlite python for full text search applications","@type":"BlogPosting","headline":"Useful Full Text Search (FTS) queries with sqlite in Python 3.7","dateModified":"2020-04-30T00:00:00-05:00","datePublished":"2020-04-30T00:00:00-05:00","url":"https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://saraswatmks.github.io/blog/feed.xml" title="Manish Saraswat" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Useful Full Text Search (FTS) queries with sqlite in Python 3.7 | Manish Saraswat</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Useful Full Text Search (FTS) queries with sqlite in Python 3.7" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Use fts5 with sqlite python for full text search applications" />
+<meta property="og:description" content="Use fts5 with sqlite python for full text search applications" />
+<link rel="canonical" href="https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html" />
+<meta property="og:url" content="https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html" />
+<meta property="og:site_name" content="Manish Saraswat" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-04-30T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Use fts5 with sqlite python for full text search applications","@type":"BlogPosting","headline":"Useful Full Text Search (FTS) queries with sqlite in Python 3.7","dateModified":"2020-04-30T00:00:00-05:00","datePublished":"2020-04-30T00:00:00-05:00","url":"https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://saraswatmks.github.io/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://saraswatmks.github.io/blog/feed.xml" title="Manish Saraswat" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head><body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Manish Saraswat</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Useful Full Text Search (FTS) queries with sqlite in Python 3.7</h1><p class="page-description">Use fts5 with sqlite python for full text search applications</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-04-30T00:00:00-05:00" itemprop="datePublished">
+        Apr 30, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      8 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#python">python</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/blog/categories/#sqlite">sqlite</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h3"><a href="#introduction">Introduction</a></li>
+<li class="toc-entry toc-h3"><a href="#table-of-contents">Table of Contents</a></li>
+<li class="toc-entry toc-h3"><a href="#1-fts-basics">1. FTS Basics</a></li>
+<li class="toc-entry toc-h3"><a href="#2-setup-conda-environment">2. Setup conda environment</a></li>
+<li class="toc-entry toc-h3"><a href="#3-load-dataset">3. Load Dataset</a></li>
+<li class="toc-entry toc-h3"><a href="#4-indexing-pandas-dataframe-into-sqlite">4. Indexing pandas dataframe into sqlite</a></li>
+<li class="toc-entry toc-h3"><a href="#5-useful-text-search-queries">5. Useful text search queries</a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#query-1">Query 1</a></li>
+<li class="toc-entry toc-h4"><a href="#query-2">Query 2</a></li>
+<li class="toc-entry toc-h4"><a href="#query-3">Query 3</a></li>
+<li class="toc-entry toc-h4"><a href="#query-4">Query 4</a></li>
+<li class="toc-entry toc-h4"><a href="#query-5">Query 5</a></li>
+<li class="toc-entry toc-h4"><a href="#query-6">Query 6</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h3"><a href="#query-7">Query 7</a></li>
+<li class="toc-entry toc-h3"><a href="#query-8">Query 8</a></li>
+<li class="toc-entry toc-h3"><a href="#query-9">Query 9</a></li>
+<li class="toc-entry toc-h3"><a href="#query-10">Query 10</a></li>
+<li class="toc-entry toc-h3"><a href="#query-11">Query 11</a></li>
+<li class="toc-entry toc-h3"><a href="#summary">Summary</a></li>
+</ul><h3 id="introduction">
+<a class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h3>
+
+<p>Sqlite offers a powerful way to build applications enabled with text similarity functionality. Being written in C, it’s execution speed in unparallel. The ease of use and its flexibity is super nice. You could use it to build a powerful search engine in no time. In fact, I’ve also used for a near real time text search task in a microservice. Here are few quick pointer you should remember:</p>
+
+<ul>
+  <li>sqlite creates an in-memory database i.e. everything gets saved into RAM. So, make sure your machine has sufficient ram, incase you are working on large datasets.</li>
+  <li>The straight forward way of using sqlite is using an conda environment (shown below). Otherwise, it’s a bit tricky to enable full text search (FTS) module with sqlite.</li>
+  <li>Full text search (FTS) module is quite old in sqlite. We’ll use the latest version, FTS5.</li>
+</ul>
+
+<p>In this tutorial, I’ll provide you some common &amp; useful fts search queries which I’ve often used in my projects.</p>
+
+<h3 id="table-of-contents">
+<a class="anchor" href="#table-of-contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>Table of Contents</h3>
+
+<ol>
+  <li><strong>FTS Basics</strong></li>
+  <li><strong>Setup conda environment</strong></li>
+  <li><strong>Load the dataset</strong></li>
+  <li><strong>Indexing pandas dataframe into sqlite</strong></li>
+  <li><strong>Useful text search queries</strong></li>
+</ol>
+
+<h3 id="1-fts-basics">
+<a class="anchor" href="#1-fts-basics" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. FTS Basics</h3>
+
+<p>Sqlite’s FTS module creates a virtual table. Think of it as a normal table in a database but on steroids i.e. powered with a blazing fast text search capabilities.</p>
+
+<p>Remember the following points while using a virtual table:</p>
+
+<ul>
+  <li>You can’t specify the column types (like schema), every column would be mapped as a text (string) column.</li>
+  <li>It supports standard table operations such as INSERT, DELETE, UPDATE.</li>
+  <li>The table assigns an implicit <code class="highlighter-rouge">rowid</code> ID for each row which is easily accessible (shown below).</li>
+  <li>The recommended way to do matching is using the MATCH operator.</li>
+  <li>The default scoring algorithm used is <a href="https://en.wikipedia.org/wiki/Okapi_BM25">BM25</a> (Best matching 25) algorithm. The best match gets highest score. The default sorting in sqlite, is sort by ascending. Hence, in order to keep the result consistent, the score is multiplied by -1. This way the best match can be ranked first. Don’t get confused if you see negative scores.</li>
+</ul>
+
+<h3 id="2-setup-conda-environment">
+<a class="anchor" href="#2-setup-conda-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Setup conda environment</h3>
+
+<p>Like mentioned above, the simplest way to use fts5 module is using sqlite3 installation in conda. Let’s create a new conda environment. Go to your terminal and execute the following commands:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">pyenv</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.7</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">conda</span> <span class="n">activate</span> <span class="n">pyenv</span>
+</code></pre></div></div>
+
+<p>Now, simply launch ipython or jupyter notebook inside the environment to access full functionalities of sqlite3.</p>
+
+<h3 id="3-load-dataset">
+<a class="anchor" href="#3-load-dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. Load Dataset</h3>
+
+<p>For this tutorial, we’ll use the classic imdb data set which contains ratings for each movie.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'imdb_1000.csv'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s quickly explore the data and understand what we’ve got.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">"The data has {r} row and {c} columns"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>The data has 979 row and 6 columns
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>star_rating</th>
+      <th>title</th>
+      <th>content_rating</th>
+      <th>genre</th>
+      <th>duration</th>
+      <th>actors_list</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>88</th>
+      <td>8.4</td>
+      <td>The Kid</td>
+      <td>NOT RATED</td>
+      <td>Comedy</td>
+      <td>68</td>
+      <td>[u'Charles Chaplin', u'Edna Purviance', u'Jack...</td>
+    </tr>
+    <tr>
+      <th>759</th>
+      <td>7.6</td>
+      <td>Robin Hood</td>
+      <td>G</td>
+      <td>Animation</td>
+      <td>83</td>
+      <td>[u'Brian Bedford', u'Phil Harris', u'Roger Mil...</td>
+    </tr>
+    <tr>
+      <th>572</th>
+      <td>7.8</td>
+      <td>The Birds</td>
+      <td>PG-13</td>
+      <td>Horror</td>
+      <td>119</td>
+      <td>[u'Rod Taylor', u'Tippi Hedren', u'Suzanne Ple...</td>
+    </tr>
+    <tr>
+      <th>773</th>
+      <td>7.6</td>
+      <td>Disconnect</td>
+      <td>R</td>
+      <td>Drama</td>
+      <td>115</td>
+      <td>[u'Jason Bateman', u'Jonah Bobo', u'Haley Ramm']</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>8.4</td>
+      <td>Requiem for a Dream</td>
+      <td>R</td>
+      <td>Drama</td>
+      <td>102</td>
+      <td>[u'Ellen Burstyn', u'Jared Leto', u'Jennifer C...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Note:</strong> For now, we’ll be using just  <code class="highlighter-rouge">title</code>,<code class="highlighter-rouge">genre</code> and <code class="highlighter-rouge">rating</code> field for query matching with basic text cleaning.</p>
+
+<h3 id="4-indexing-pandas-dataframe-into-sqlite">
+<a class="anchor" href="#4-indexing-pandas-dataframe-into-sqlite" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. Indexing pandas dataframe into sqlite</h3>
+
+<p>Before indexing the data, let’s do basic text cleaning.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># clean text
+</span><span class="n">df</span><span class="p">[</span><span class="s">'title'</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s">'title'</span><span class="p">]</span>
+               <span class="o">.</span><span class="nb">str</span>
+                <span class="c1">#replace everything which is not a digit or alphabet
+</span>               <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">r'[^a-zA-Z0-9]'</span><span class="p">,</span><span class="s">' '</span><span class="p">)</span>
+               <span class="o">.</span><span class="nb">str</span>
+               <span class="o">.</span><span class="n">split</span><span class="p">()</span>
+               <span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">' '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]))</span>
+                <span class="c1">#convert to lowercase
+</span>               <span class="o">.</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'genre'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'genre'</span><span class="p">]</span><span class="o">.</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># create sqlite database into local memory (RAM)
+</span><span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">':memory:'</span><span class="p">)</span>
+<span class="n">cur</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># create table
+</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">'create virtual table imdb using fts5(title, genre, rating, tokenize="porter unicode61");'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;sqlite3.Cursor at 0x11e2cd5e0&gt;
+</code></pre></div></div>
+
+<p>sqlite offers powerful inbuilt tokenizer options. Those are:</p>
+
+<ul>
+  <li>
+<strong>unicode61</strong>: This is the default. It normalises all tokens into unicode characters.</li>
+  <li>
+<strong>ascii</strong>: It converts all non-ascii characters like ã, Â and matches them with their ascii version. For example: <code class="highlighter-rouge">porteño</code> would be matched with <code class="highlighter-rouge">porteno</code>.</li>
+  <li>
+<strong>porter</strong>: It implements porter stemming algorithm. It would match happening, happened, happens to happen.</li>
+</ul>
+
+<p>For our case, we are using a combination of unicode61 and porter tokenizer.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># bulk index records
+</span><span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">'insert into imdb (title, genre, rating) values (?,?,?);'</span><span class="p">,</span> <span class="n">df</span><span class="p">[[</span><span class="s">'title'</span><span class="p">,</span> <span class="s">'genre'</span><span class="p">,</span><span class="s">'star_rating'</span><span class="p">]]</span><span class="o">.</span><span class="n">to_records</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="5-useful-text-search-queries">
+<a class="anchor" href="#5-useful-text-search-queries" aria-hidden="true"><span class="octicon octicon-link"></span></a>5. Useful text search queries</h3>
+
+<h4 id="query-1">
+<a class="anchor" href="#query-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 1</h4>
+
+<p><code class="highlighter-rouge">*</code> wildcard is quite powerful here. It can match sub queries (matches god -&gt; godfather) as well.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># match any tokens which begins with this prefix
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'god*'</span>
+ 
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH "{q}" and rating &gt; 6
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('the godfather', 'crime', 9.2, -5.50716086129246),
+ ('city of god', 'crime', 8.7, -5.126347695889207),
+ ('the godfather part ii', 'crime', 9.1, -4.794793805845165),
+ ('the godfather part iii', 'crime', 7.6, -4.794793805845165),
+ ('aguirre the wrath of god', 'adventure', 8.0, -4.503522057306445)]
+</code></pre></div></div>
+
+<h4 id="query-2">
+<a class="anchor" href="#query-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 2</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># everything starts with this word
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'^ The'</span>
+
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('the godfather', 'crime', 9.2, -1.30318200237765),
+ ('the matrix', 'action', 8.7, -1.30318200237765),
+ ('the intouchables', 'biography', 8.6, -1.30318200237765),
+ ('the pianist', 'biography', 8.5, -1.30318200237765),
+ ('the departed', 'crime', 8.5, -1.30318200237765)]
+</code></pre></div></div>
+
+<h4 id="query-3">
+<a class="anchor" href="#query-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 3</h4>
+
+<p>Here it matches the titles where exists maximum 3 tokens between <code class="highlighter-rouge">the</code> and <code class="highlighter-rouge">a</code> token.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># match all title where there are maximum 3 tokens between "the" and "a".
+# good way to match phrases
+</span><span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH 'NEAR(the a, 3)'
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('the perks of being a wallflower', 'drama', 8.1, -3.0937328318311303),
+ ('perfume the story of a murderer', 'crime', 7.5, -3.0937328318311303),
+ ('once upon a time in the west', 'western', 8.6, -2.9261560330036995)]
+</code></pre></div></div>
+
+<h4 id="query-4">
+<a class="anchor" href="#query-4" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 4</h4>
+
+<p>Easy to use boolean operators between tokens. <code class="highlighter-rouge">AND</code>, <code class="highlighter-rouge">OR</code> and <code class="highlighter-rouge">NOT</code> are reserved keywords in sqlite.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">q</span> <span class="o">=</span> <span class="s">'The OR GodFather'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('the godfather', 'crime', 9.2, -6.81247515893631),
+ ('the godfather part ii', 'crime', 9.1, -5.931261954617385),
+ ('the godfather part iii', 'crime', 7.6, -5.931261954617385),
+ ('the lord of the rings the return of the king', 'adventure', 8.9, -1.0803071105367759),
+ ('the lord of the rings the fellowship of the ring', 'adventure', 8.8, -1.0803071105367759)]
+</code></pre></div></div>
+
+<h4 id="query-5">
+<a class="anchor" href="#query-5" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 5</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hybrid query 
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'The AND GodFather AND P*'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('the godfather part ii', 'crime', 9.1, -7.960962698923183),
+ ('the godfather part iii', 'crime', 7.6, -7.960962698923183)]
+</code></pre></div></div>
+
+<h4 id="query-6">
+<a class="anchor" href="#query-6" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 6</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hybrid query
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'a AND the OR a NOT of*'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('once upon a time in the west', 'western', 8.6, -5.2526889873547455),
+ ('a prophet', 'crime', 7.9, -3.1906709638269364),
+ ('boy a', 'drama', 7.7, -3.1906709638269364),
+ ('the perks of being a wallflower', 'drama', 8.1, -3.0937328318311303),
+ ('perfume the story of a murderer', 'crime', 7.5, -3.0937328318311303)]
+</code></pre></div></div>
+
+<h3 id="query-7">
+<a class="anchor" href="#query-7" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 7</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hybrid query
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'com*'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where title MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('the ten commandments', 'adventure', 7.9, -5.326063808508073),
+ ('the king of comedy', 'comedy', 7.8, -4.981592992424006),
+ ('guess who s coming to dinner', 'comedy', 7.8, -4.411015485745623),
+ ('master and commander the far side of the world', 'action', 7.4, -3.764289031066617)]
+</code></pre></div></div>
+
+<h3 id="query-8">
+<a class="anchor" href="#query-8" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 8</h3>
+
+<p>Instead of using the search field in the sql query, we can also mention it in the search query instead.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hybrid query
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'title : of the'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select *, rank
+                      from imdb
+                      where imdb MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('nausicaa of the valley of the wind', 'animation', 8.2, -3.276218025553669),
+ ('dawn of the planet of the apes', 'action', 7.7, -3.276218025553669),
+ ('rise of the planet of the apes', 'action', 7.6, -3.276218025553669),
+ ('the lord of the rings the return of the king', 'adventure', 8.9, -3.213583634242071),
+ ('the lord of the rings the fellowship of the ring', 'adventure', 8.8, -3.213583634242071)]
+</code></pre></div></div>
+
+<p>Following queries would demonstrate the use of available auxilary functions in sqlite.</p>
+
+<h3 id="query-9">
+<a class="anchor" href="#query-9" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 9</h3>
+
+<p><code class="highlighter-rouge">highlight</code> as the name suggest is useful to highlight the selected text using given values.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># highlight text with brackets
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'title : of the'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select highlight(imdb, 0, '[', ']')
+                      from imdb
+                      where imdb MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('nausicaa [of] [the] valley [of] [the] wind',),
+ ('dawn [of] [the] planet [of] [the] apes',),
+ ('rise [of] [the] planet [of] [the] apes',),
+ ('[the] lord [of] [the] rings [the] return [of] [the] king',),
+ ('[the] lord [of] [the] rings [the] fellowship [of] [the] ring',)]
+</code></pre></div></div>
+
+<h3 id="query-10">
+<a class="anchor" href="#query-10" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 10</h3>
+
+<p><code class="highlighter-rouge">snippet</code> is used to extract the given search query from the text. Below, we extract upto three words around the search query.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hybrid query
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'title : the'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select snippet(imdb, 0, '[', ']', '', 3)
+                      from imdb
+                      where imdb MATCH "{q}"
+                      ORDER BY rank
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[('[the] lord of',),
+ ('[the] lord of',),
+ ('[the] good [the]',),
+ ('[the] lord of',),
+ ('[the] hobbit [the]',)]
+</code></pre></div></div>
+
+<h3 id="query-11">
+<a class="anchor" href="#query-11" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query 11</h3>
+
+<p><code class="highlighter-rouge">bm25</code> is also provided as a auxilary function. By default, <code class="highlighter-rouge">bm25</code> provides equal weights to all the fields, however here we have the option to provide custom weight. Here, we provide weight = 10 for title and weight = 5 for genre.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># hybrid query
+</span><span class="n">q</span> <span class="o">=</span> <span class="s">'(title : the OR of) AND (genre: Action OR Comedy)'</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s">"""select rowid, *, bm25(imdb, 10.0, 5.0)
+                      from imdb
+                      where imdb MATCH "{q}"
+                      ORDER BY bm25(imdb, 10.0, 5.0)
+                      limit 5"""</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="n">res</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[(581, 'the king of comedy', 'comedy', 7.8, -8.870776402745351),
+ (624, 'dawn of the planet of the apes', 'action', 7.7, -8.68632546114357),
+ (788, 'rise of the planet of the apes', 'action', 7.6, -8.68632546114357),
+ (197, 'guardians of the galaxy', 'action', 8.1, -8.666804134844527),
+ (510, 'the last of the mohicans', 'action', 7.8, -8.624016931126334)]
+</code></pre></div></div>
+
+<h3 id="summary">
+<a class="anchor" href="#summary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary</h3>
+
+<p>In this tutorial, we learnt about the basics of sqlite and how to write powerful fts queries for matching text using python 3.7.</p>
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="saraswatmks/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/python/sqlite/2020/04/30/sqlite-fts-search-queries.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Using data science to solve real world problems</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/saraswatmks" title="saraswatmks"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/manish_saraswt" title="manish_saraswt"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Practical Tutorial on Asyncio in Python 3.7 | Manish Saraswat</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Practical Tutorial on Asyncio in Python 3.7" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Understanding asyncio using simple examples in python 3.7" />
+<meta property="og:description" content="Understanding asyncio using simple examples in python 3.7" />
+<link rel="canonical" href="https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html" />
+<meta property="og:url" content="https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html" />
+<meta property="og:site_name" content="Manish Saraswat" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-05-03T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Understanding asyncio using simple examples in python 3.7","@type":"BlogPosting","headline":"Practical Tutorial on Asyncio in Python 3.7","dateModified":"2020-05-03T00:00:00-05:00","datePublished":"2020-05-03T00:00:00-05:00","url":"https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://saraswatmks.github.io/blog/feed.xml" title="Manish Saraswat" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Practical Tutorial on Asyncio in Python 3.7 | Manish Saraswat</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Practical Tutorial on Asyncio in Python 3.7" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Understanding asyncio using simple examples in python 3.7" />
+<meta property="og:description" content="Understanding asyncio using simple examples in python 3.7" />
+<link rel="canonical" href="https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html" />
+<meta property="og:url" content="https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html" />
+<meta property="og:site_name" content="Manish Saraswat" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-05-03T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Understanding asyncio using simple examples in python 3.7","@type":"BlogPosting","headline":"Practical Tutorial on Asyncio in Python 3.7","dateModified":"2020-05-03T00:00:00-05:00","datePublished":"2020-05-03T00:00:00-05:00","url":"https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://saraswatmks.github.io/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://saraswatmks.github.io/blog/feed.xml" title="Manish Saraswat" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head><body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Manish Saraswat</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Practical Tutorial on Asyncio in Python 3.7</h1><p class="page-description">Understanding asyncio using simple examples in python 3.7</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-05-03T00:00:00-05:00" itemprop="datePublished">
+        May 3, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      8 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#python">python</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/blog/categories/#machinelearning">machinelearning</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="introduction">Introduction</h3>
+
+<p>Asyncio has become quite popular in the python ecosystem. From using it in small functions to large microservices, it’s benefits are widely recognized.</p>
+
+<p>In this blog, I’ll share my understanding of asyncio and how you can see it. Later we’ll focus on gaining hands-on experience in writing asyc code. We’ll try to cover different use-cases that I’ve come across solving different problems.</p>
+
+<h3 id="table-of-contents">Table of Contents</h3>
+
+<ol>
+  <li><strong>What is asyncio?</strong></li>
+  <li><strong>How asyncio works?</strong></li>
+  <li><strong>Practical Examples</strong></li>
+</ol>
+
+<h3 id="1-what-is-asyncio">1. What is asyncio?</h3>
+
+<p>Asyncio is a built-in library in python used to run code concurrently. You might be wondering, “concurrently”? what does that mean. Let’s understand it.</p>
+
+<p>Concurrency is a way of doing multiple tasks but one at a time. For example: Let’s say, you are reading a book. Also, you are checking your whatsapp. You can do both the things, but one at a time. You can’t concentrate on reading the book and check whatsapp at the same time. You would pause one activity in order to do the other. If you are reading the book, you would keep your phone aside. If your whatsapp fires up some notification, you’ll pause reading and check your phone.</p>
+
+<p>Hence, it can be said that you are reading a book and checking your whatsapp “concurrently”.</p>
+
+<p>But, what if you can do tasks simultaneously? Yes, completely possible. That would be called as Parallelism. For example: Talking on phone while driving. You can do both the things together.</p>
+
+<h3 id="2-how-asyncio-works-">2. How asyncio works ?</h3>
+
+<p>Asyncio makes concurrency possible using coroutines. Coroutines are nothing but python functions prefixed with <code class="highlighter-rouge">async</code> keyword. For example:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># this is a normal function
+</span><span class="k">def</span> <span class="nf">numsum</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+<span class="c1"># this is a coroutine
+</span><span class="k">async</span> <span class="k">def</span> <span class="nf">num_sum</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The difference between both the functions can be noted by what they return. Let’s see.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="n">numsum</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>10
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="n">num_sum</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;coroutine object num_sum at 0x10d3ad8c0&gt;
+
+
+/usr/local/Caskroom/miniconda/base/envs/pyenv/lib/python3.7/site-packages/ipykernel_launcher.py:1: RuntimeWarning: coroutine 'num_sum' was never awaited
+  """Entry point for launching an IPython kernel.
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+</code></pre></div></div>
+
+<p>The normal function returned an integer (as expected). But, coroutines return coroutines object which must be awaited using <code class="highlighter-rouge">await</code> keyword. <code class="highlighter-rouge">async</code> &amp; <code class="highlighter-rouge">await</code> for reserved keywords in python.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="k">await</span> <span class="n">num_sum</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>10
+</code></pre></div></div>
+
+<p>If you are running your code in the jupyter notebook, running the above cell will work. But in a script, it wouldn’t work unless the event loop has been initialised. Think of an event loop as current thread responsible to execute the code. Notebooks have default access to event loops, scripts don’t. Hence, assuming you run it in a script, you can do <code class="highlighter-rouge">asyncio.run(num_sum(10))</code>:</p>
+
+<p>You might still be wondering, how is asyncio able to switch between the tasks? Let’s see it with the following examples.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reading_book</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 1"</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 2"</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 3"</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 4"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">checking_whatsapp</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 1"</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 2"</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 3"</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 4"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s say we are doing these two tasks <code class="highlighter-rouge">reading_book</code> and <code class="highlighter-rouge">checking_whatsapp</code>. First, it would be good to see how would our tasks look it if we do it sequentially.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">tasks</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="n">task</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># execute tasks sequentially
+</span><span class="n">main</span><span class="p">([</span><span class="n">reading_book</span><span class="p">(),</span> <span class="n">checking_whatsapp</span><span class="p">()])</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>reading page 1
+reading page 2
+reading page 3
+reading page 4
+reading new message 1
+reading new message 2
+reading new message 3
+reading new message 4
+</code></pre></div></div>
+
+<p>As expected, in sequential mode, we can’t read whatsapp messages without finishing reading the book pages. In other words, reading pages will block us to read message.</p>
+
+<p>Now, what makes a function behaves likes a coroutine internally is a <code class="highlighter-rouge">yield</code> command. <code class="highlighter-rouge">yield</code> is used to create generators. <code class="highlighter-rouge">yield</code> command helps in suspending the current running task while it is running and switches to other task. Let run the above example concurrently.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reading_book_concur</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 1"</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 2"</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 3"</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 4"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">checking_whatsapp_concur</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 1"</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 2"</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 3"</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 4"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">tasks</span><span class="p">):</span>
+    <span class="k">while</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">next</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+        <span class="k">except</span> <span class="nb">StopIteration</span><span class="p">:</span>
+            <span class="k">pass</span>    
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># execute tasks concurrently
+</span><span class="n">main</span><span class="p">([</span><span class="n">reading_book_concur</span><span class="p">(),</span> <span class="n">checking_whatsapp_concur</span><span class="p">()])</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>reading page 1
+reading new message 1
+reading page 2
+reading new message 2
+reading page 3
+reading new message 3
+reading page 4
+reading new message 4
+</code></pre></div></div>
+
+<p>Now you see, we are doing both the tasks concurrently. Don’t worry if you don’t understand the above function, asyncio provides us much simpler way to do it. Let’s see how we can do in one line with asyncio:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="c1"># convert to coroutine
+</span><span class="k">async</span> <span class="k">def</span> <span class="nf">reading_book</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 1"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 2"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 3"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 4"</span><span class="p">)</span>
+
+<span class="c1"># convert to coroutine
+</span><span class="k">async</span> <span class="k">def</span> <span class="nf">checking_whatsapp</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 1"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 2"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 3"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 4"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">tasks</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">task</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">])</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">await</span> <span class="n">main</span><span class="p">([</span><span class="n">reading_book</span><span class="p">(),</span> <span class="n">checking_whatsapp</span><span class="p">()])</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>reading page 1
+reading new message 1
+reading page 2
+reading new message 2
+reading page 3
+reading new message 3
+reading page 4
+reading new message 4
+</code></pre></div></div>
+
+<p>Few points to note:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">asyncio.sleep</code> does the same function as <code class="highlighter-rouge">yield</code>, suspends the execution of current task so it can do the other task.</li>
+  <li><code class="highlighter-rouge">asyncio.gather</code> does similar to <code class="highlighter-rouge">main</code> function from previous task, switches between tasks.</li>
+</ul>
+
+<p>Let’s make it more interesting. Let’s say you also want boil some water also while doing other tasks. How can we do that ? Exactly same as above, but since boiling water would take some time, we’ll modify the sleep time, show below:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">boiling_water</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"boiling for 1 sec"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"boiling for 3 sec"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"boiling for 5 sec"</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">reading_book</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 1"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 2"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 3"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading page 4"</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">checking_whatsapp</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 1"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 2"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 3"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"reading new message 4"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">await</span> <span class="n">main</span><span class="p">([</span><span class="n">boiling_water</span><span class="p">(),</span><span class="n">reading_book</span><span class="p">(),</span> <span class="n">checking_whatsapp</span><span class="p">()])</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>boiling for 1 sec
+reading page 1
+reading new message 1
+reading page 2
+reading new message 2
+reading page 3
+reading new message 3
+reading page 4
+reading new message 4
+boiling for 3 sec
+boiling for 5 sec
+</code></pre></div></div>
+
+<p>We kept the water for boiling and meanwhile we continued to do other tasks.</p>
+
+<h3 id="3-practical-examples">3. Practical Examples</h3>
+
+<p>The best use of asyncio I have come across is when calling multiple external services where each call is independent of other. Besides concurrency, asyncio can be used with other multiprocessing libraries to enable parallelism. So cool right? 
+In the examples below, we’ll use built-in <code class="highlighter-rouge">concurrent</code> python module to use async code but in parallel.</p>
+
+<h4 id="31-calling-external-service--api--db-in-parallel">3.1 Calling external service / api / db in parallel</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_async_response</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+    
+    <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
+    
+    <span class="c1"># "None" will use all cores
+</span>    <span class="n">threads</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="c1"># send tasks to each worker
+</span>    <span class="n">blocking_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">loop</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="n">threads</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">param</span><span class="p">]</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">blocking_tasks</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div></div>
+
+<p>Say, we have a list containing some data for which we want response from external api. We can do something like:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">my_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">'id1'</span><span class="p">,</span> <span class="s">'id2'</span><span class="p">,</span> <span class="s">'id2'</span><span class="p">]</span>
+<span class="n">endpointurl</span> <span class="o">=</span> <span class="s">"https://myurl.com/"</span>
+<span class="k">def</span> <span class="nf">get_response</span><span class="p">(</span><span class="n">user_id</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s">'GET'</span><span class="p">,</span> <span class="n">f</span><span class="s">"{endpointurl}{use_id}"</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">r</span>
+
+<span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_async_response</span><span class="p">(</span><span class="n">get_response</span><span class="p">,</span> <span class="n">my_list</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="32-doing-cpu-intensive-computation">3.2 Doing CPU intensive computation</h4>
+
+<p>Let’s say we want to do fuzzy match between two list. Since this is cpu intensive task, we won’t use async for this.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># some dummy data
+</span><span class="n">list_size</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">list1</span> <span class="o">=</span> <span class="p">[</span><span class="s">'football is famous'</span><span class="p">,</span> <span class="s">'tajmahal is famous'</span><span class="p">,</span> <span class="s">'tajmahal in india'</span><span class="p">]</span><span class="o">*</span><span class="n">list_size</span>
+<span class="n">list2</span> <span class="o">=</span> <span class="p">[</span><span class="s">'messi plays football'</span><span class="p">,</span> <span class="s">'messi is famous'</span><span class="p">,</span> <span class="s">'india is in aisa'</span><span class="p">]</span><span class="o">*</span><span class="n">list_size</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">fuzzywuzzy</span> <span class="kn">import</span> <span class="n">fuzz</span> 
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
+
+<span class="k">def</span> <span class="nf">cpu_tasks</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="c1"># set chunksize to be even 
+</span>    <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">tp</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="nb">map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">fuzzy_match</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">):</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">token_sort_ratio</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)}</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># creating a list of inputs
+</span><span class="n">obj_lst</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">list1</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">list2</span><span class="p">]</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># computing fuzzy matches in parallel
+</span><span class="n">r</span> <span class="o">=</span> <span class="n">cpu_tasks</span><span class="p">(</span><span class="n">fuzzy_match</span><span class="p">,</span> <span class="n">obj_lst</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">15</span><span class="p">]</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[{('football is famous', 'messi is famous'): 55},
+ {('tajmahal is famous', 'messi is famous'): 67},
+ {('tajmahal in india', 'messi is famous'): 19},
+ {('football is famous', 'messi is famous'): 55},
+ {('tajmahal is famous', 'messi is famous'): 67},
+ {('tajmahal in india', 'messi is famous'): 19},
+ {('football is famous', 'messi is famous'): 55},
+ {('tajmahal is famous', 'messi is famous'): 67},
+ {('tajmahal in india', 'messi is famous'): 19},
+ {('football is famous', 'messi is famous'): 55},
+ {('tajmahal is famous', 'messi is famous'): 67},
+ {('tajmahal in india', 'messi is famous'): 19},
+ {('football is famous', 'messi is famous'): 55},
+ {('tajmahal is famous', 'messi is famous'): 67},
+ {('tajmahal in india', 'messi is famous'): 19}]
+</code></pre></div></div>
+
+<h3 id="summary">Summary</h3>
+
+<p>In this tutorial, we got a basic understanding of how concurrency works, how asyncio makes things much easier in running code concurrently. Also, we looked at some examples using parallelism effectively.</p>
+
+<p>In my experience, using asyncio doesn’t make sense when you are doing just one task. For example: You create an endpoint which calls a database for some information, without that rest of the code cannot execute. In such scenario, using concurrent code wouldn’t help since the nature of code is sequential. However, in case you are doing multiple independent tasks at a time, async will be helpful.</p>
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="saraswatmks/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/python/machinelearning/2020/05/03/asyncio-concurrent-python-tutorial.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Using data science to solve real world problems</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/saraswatmks" title="saraswatmks"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/manish_saraswt" title="manish_saraswt"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
